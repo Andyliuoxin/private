@@ -6,9 +6,9 @@ select
 ,t2.site_id as 站点ID
 ,t4.name as 站点
 ,t5.name as 域
-,t1.created_at as 创建时间
-,t1.updated_at as 更新时间
-,t2.login_at as 上次登录时间
+,t1.created_at::timestamp + '8 hour' as 创建时间
+,t1.updated_at::timestamp + '8 hour' as 更新时间
+,t2.login_at::timestamp + '8 hour' as 上次登录时间
 ,case when admin_level=10 then '服务器管理员'
       when t3.display_name='Creator' then 'Creator'
 			when t3.display_name='Site Administrator Creator' then '站点管理员 Creator'
@@ -17,7 +17,15 @@ select
 			when t3.display_name='Explorer' then 'Explorer'
 			when t3.display_name='Viewer' then 'Viewer(查看者)'
 			when t3.display_name='Unlicensed' then '未许可'				
-	end	as 站点角色
+			end	as 站点角色
+,case when t3.display_name='Site Administrator Creator' then 7
+			when t3.display_name='Site Administrator Explorer' then 6
+			when t3.display_name='Creator' then 5
+			when t3.display_name='Explorer(Can Publish)' then 4
+			when t3.display_name='Explorer' then 3
+			when t3.display_name='Viewer' then 2
+			when t3.display_name='Unlicensed' then 1
+		  end as 站点角色权重
 ,case when t3.display_name like '%Viewer%' then 'Viewer'
 			when t3.display_name like '%Explorer%' then 'Explorer'
 			when t3.display_name like '%Creator%' then 'Creator'
