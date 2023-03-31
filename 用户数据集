@@ -1,0 +1,31 @@
+--用户表
+select
+ t1.id as 用户ID
+,t1.name as 用户名
+,t1.friendly_name as 显示名称
+,t2.site_id as 站点ID
+,t4.name as 站点
+,t5.name as 域
+,t1.created_at as 创建时间
+,t1.updated_at as 更新时间
+,t2.login_at as 上次登录时间
+,case when admin_level=10 then '服务器管理员'
+      when t3.display_name='Creator' then 'Creator'
+			when t3.display_name='Site Administrator Creator' then '站点管理员 Creator'
+			when t3.display_name='Site Administrator Explorer' then '站点管理员 Explorer'
+			when t3.display_name='Explorer(Can Publish)' then 'Explorer（可发布）'
+			when t3.display_name='Explorer' then 'Explorer'
+			when t3.display_name='Viewer' then 'Viewer(查看者)'
+			when t3.display_name='Unlicensed' then '未许可'				
+	end	as 站点角色
+,case when t3.display_name like '%Viewer%' then 'Viewer'
+			when t3.display_name like '%Explorer%' then 'Explorer'
+			when t3.display_name like '%Creator%' then 'Creator'
+			when t3.display_name like '%Unlicensed%' then '未许可'
+			end as 许可级别
+from public.system_users t1
+left join public.users t2 on t2.system_user_id=t1.id
+left join public.site_roles t3 on t3.id=t2.site_role_id
+left join public.sites t4 on t4.id=t2.site_id
+left join public.domains t5 on t5.id=t1.domain_id
+where t1.created_at is not null
