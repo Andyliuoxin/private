@@ -30,4 +30,3 @@ left join public.sites t13 on t13.id=t12.site_id
 left join public.hist_datasources t14 on t14.id=t1.hist_datasource_id
 left join public.datasources t15 on t15.id=t14.datasource_id
 where t1.hist_actor_user_id is not null and t2.name in ('Login','Publish Workbook','Publish Data Source','Access View','Access Data Source','Download Workbook','Download Data Source')
-order by t1.created_at desc
