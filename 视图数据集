@@ -1,3 +1,4 @@
+--视图
 select
  t1.id 视图ID
 ,t1.name as 视图
@@ -8,8 +9,9 @@ select
 ,t3.name as 项目
 ,t4.id as 站点ID
 ,t4.name as 站点
-,t2.created_at as 工作簿创建时间
-,t2.updated_at as 工作簿更新时间
+,t2.created_at::timestamp + '8 hour' as 工作簿创建时间
+,t2.updated_at::timestamp + '8 hour' as 工作簿最后更新时间
+,t7.工作簿最后一次访问时间
 ,t6.id as 所有者ID
 ,t6.name as 所有者
 ,t6.friendly_name as 显示名称
@@ -19,3 +21,15 @@ left join public.projects t3 on t3.id=t2.project_id
 left join public.sites t4 on t4.id=t3.site_id
 left join public.users t5 on t5.id=t2.owner_id
 left join public.system_users t6 on t6.id=t5.system_user_id
+left join (
+					select
+					t9.id
+					,max(t1.created_at)::timestamp + '8 hour' as 工作簿最后一次访问时间
+					from public.historical_events t1
+					left join public.historical_event_types t2 on t2.type_id=t1.historical_event_type_id
+					left join public.hist_workbooks t8 on t8.id=t1.hist_workbook_id
+					left join public.workbooks t9 on t9.id=t8.workbook_id
+					where t2.name ='Access View'
+					group by
+					t9.id
+ )t7 on t7.id=t2.id
