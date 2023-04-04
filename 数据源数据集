@@ -15,7 +15,7 @@ select
 ,case when t6.server='' then t6.dbname 
 			else t6.server end as 连接到
 ,t6.dbclass as 源数据类型
-,t1.extracts_refreshed_at as 最后一次数据刷新时间
+,t1.extracts_refreshed_at::timestamp + '8 hour' as 最后一次数据刷新时间
 ,case when t1.refreshable_extracts='t' then '数据提取'
 			else '实时连接' end as 连接类型
 from public.datasources t1
