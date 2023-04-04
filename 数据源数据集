@@ -1,0 +1,27 @@
+select
+ t1.id as 数据源ID
+,t1.name as 数据源
+,case when parent_workbook_id is null then '独立数据源'
+			else '嵌入工作簿的数据源' end as 数据源类型
+,t1.created_at::timestamp + '8 hour' as 创建时间
+,t1.updated_at::timestamp + '8 hour' as 更新时间
+,t2.id as 项目ID
+,t2.name as 项目
+,t3.id as 所有者ID
+,t4.name as 所有者
+,t4.friendly_name as 显示名称
+,t5.id as 站点ID
+,t5.name as 站点
+,case when t6.server='' then t6.dbname 
+			else t6.server end as 连接到
+,t6.dbclass as 源数据类型
+,t1.extracts_refreshed_at as 最后一次数据刷新时间
+,case when t1.refreshable_extracts='t' then '数据提取'
+			else '实时连接' end as 连接类型
+from public.datasources t1
+left join public.projects t2 on t2.id=t1.project_id
+left join public.users t3 on t3.id=t1.owner_id
+left join public.system_users t4 on t4.id=t3.system_user_id
+left join public.sites t5 on t5.id=t1.site_id
+left join public.data_connections t6 on t6.datasource_id=t1.id
+where t1.parent_workbook_id is null
