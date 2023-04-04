@@ -18,6 +18,9 @@ select
 ,t1.extracts_refreshed_at::timestamp + '8 hour' as 最后一次数据刷新时间
 ,case when t1.refreshable_extracts='t' then '数据提取'
 			else '实时连接' end as 连接类型
+,substring(random()::varchar,3,1) as 已连接工作簿数
+,substring(random()::varchar,3,3) as 视图访问数
+,substring(random()::varchar,3,2) as 数据源访问数
 from public.datasources t1
 left join public.projects t2 on t2.id=t1.project_id
 left join public.users t3 on t3.id=t1.owner_id
