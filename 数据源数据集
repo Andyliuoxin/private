@@ -1,3 +1,10 @@
+with temp_view_count as(
+select
+ datasource_id
+,concat_ws('-',year_index,month_index,day_index)::timestamp 
+,view_count
+from datasource_metrics_aggregations
+)
 select
  t1.id as 数据源ID
 ,t1.name as 数据源
@@ -18,13 +25,26 @@ select
 ,t1.extracts_refreshed_at::timestamp + '8 hour' as 最后一次数据刷新时间
 ,case when t1.refreshable_extracts='t' then '数据提取'
 			else '实时连接' end as 连接类型
-,substring(random()::varchar,3,1) as 已连接工作簿数
-,substring(random()::varchar,3,3) as 视图访问数
-,substring(random()::varchar,3,2) as 数据源访问数
+,t7.数据源最后一次访问时间
+,(select sum(a.view_count) from temp_view_count a where a.datasource_id=t1.id) as 视图访问数
+,数据源访问数
 from public.datasources t1
 left join public.projects t2 on t2.id=t1.project_id
 left join public.users t3 on t3.id=t1.owner_id
 left join public.system_users t4 on t4.id=t3.system_user_id
 left join public.sites t5 on t5.id=t1.site_id
 left join public.data_connections t6 on t6.datasource_id=t1.id
+left join (
+					select
+					t15.id
+					,max(t1.created_at)::timestamp + '8 hour' as 数据源最后一次访问时间
+					,count(1) as 数据源访问数
+					from public.historical_events t1
+					left join public.historical_event_types t2 on t2.type_id=t1.historical_event_type_id
+					left join public.hist_datasources t14 on t14.id=t1.hist_datasource_id
+					left join public.datasources t15 on t15.id=t14.datasource_id
+					where t2.name ='Access Data Source'
+					group by
+					t15.id
+ )t7 on t7.id=t1.id
 where t1.parent_workbook_id is null
