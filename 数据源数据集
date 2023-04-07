@@ -1,7 +1,7 @@
 with temp_view_count as(
 select
  datasource_id
-,concat_ws('-',year_index,month_index,day_index)::date
+,concat_ws('-',year_index,case when month_index=0 then 1 else month_index end,case when day_index=0 then 1 else day_index end)::date as count_date
 ,view_count
 from datasource_metrics_aggregations
 )
