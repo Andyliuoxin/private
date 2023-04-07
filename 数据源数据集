@@ -1,7 +1,7 @@
 with temp_view_count as(
 select
  datasource_id
-,concat_ws('-',year_index,month_index,day_index)::timestamp 
+,concat_ws('-',year_index,month_index,day_index)::date
 ,view_count
 from datasource_metrics_aggregations
 )
