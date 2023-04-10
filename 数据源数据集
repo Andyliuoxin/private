@@ -28,6 +28,7 @@ select
 ,t7.数据源最后一次访问时间
 ,(select sum(a.view_count) from temp_view_count a where a.datasource_id=t1.id) as 视图访问数
 ,数据源访问数
+,链接工作簿数
 from public.datasources t1
 left join public.projects t2 on t2.id=t1.project_id
 left join public.users t3 on t3.id=t1.owner_id
@@ -47,4 +48,23 @@ left join (
 					group by
 					t15.id
  )t7 on t7.id=t1.id
-where t1.parent_workbook_id is null
+ left join (
+					select id,count(hidden_name) as 链接工作簿数 from(
+						 select
+						 t1.id
+						,t1.name as 数据源
+						,t2.hidden_name
+						,t2.parent_workbook_id
+						from (
+								select
+								 id
+								,site_id
+								,project_id
+								,name
+								from datasources
+								where parent_type is null
+						)t1
+						left join datasources t2 on t2.site_id=t1.site_id and t2.project_id=t1.project_id and t2.name=t1.name and t2.parent_type='Workbook'
+					)t group by id
+ )t8 on t8.id=t1.id
+where t1.parent_type is null
