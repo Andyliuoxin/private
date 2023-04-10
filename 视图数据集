@@ -1,3 +1,4 @@
+--视图信息表
 select
  t1.id 视图ID
 ,t1.name as 视图
@@ -15,7 +16,8 @@ select
 ,t6.name as 所有者
 ,t6.friendly_name as 显示名称
 ,访问人次
-,访问用户数
+,视图访问用户数
+,工作簿访问用户数
 FROM public.views t1
 left join public.workbooks t2 on t2.id=t1.workbook_id
 left join public.projects t3 on t3.id=t2.project_id
@@ -38,7 +40,7 @@ left join (
 					select
 					 t7.id
 					,count(t5.id) as 访问人次
-					,count(distinct t5.id) as 访问用户数
+					,count(distinct t5.id) as 视图访问用户数
 					from public.historical_events t1
 					left join public.historical_event_types t2 on t2.type_id=t1.historical_event_type_id
 					left join public.hist_users t3 on t3.id=t1.hist_actor_user_id
@@ -51,3 +53,19 @@ left join (
 					group by
 					t7.id
  )t8 on t8.id=t1.id
+left join (
+				select
+				 t9.id
+				,count(distinct t5.id) as 工作簿访问用户数
+				from public.historical_events t1
+				left join public.historical_event_types t2 on t2.type_id=t1.historical_event_type_id
+				left join public.hist_users t3 on t3.id=t1.hist_actor_user_id
+				left join public.users t4 on t4.id=t3.user_id
+				left join public.system_users t5 on t5.id =t4.system_user_id
+				left join public.hist_workbooks t8 on t8.id=t1.hist_workbook_id
+				left join public.workbooks t9 on t9.id=t8.workbook_id
+				where t2.name ='Access View'
+				and t1.created_at::timestamp + '8 hour' between '2023-03-01 00:00:00' and '2023-04-09 00:00:00'
+				group by
+				t9.id
+)t9 on t9.id=t2.id
