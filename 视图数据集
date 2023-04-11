@@ -39,33 +39,29 @@ left join (
  left join (
 					select
 					 t7.id
-					,count(t5.id) as 访问人次
-					,count(distinct t5.id) as 视图访问用户数
+					,count(1) as 访问人次
+					,count(distinct t3.system_user_id) as 视图访问用户数
 					from public.historical_events t1
 					left join public.historical_event_types t2 on t2.type_id=t1.historical_event_type_id
 					left join public.hist_users t3 on t3.id=t1.hist_actor_user_id
-					left join public.users t4 on t4.id=t3.user_id
-					left join public.system_users t5 on t5.id =t4.system_user_id
 					left join public.hist_views t6 on t6.id=t1.hist_view_id
 					left join public.views t7 on t7.id=t6.view_id
 					where t2.name ='Access View'
-					and t1.created_at::timestamp + '8 hour' between '2023-03-01 00:00:00' and '2023-04-09 00:00:00'
+					and t1.created_at::timestamp + '8 hour' between '2000-01-01 00:00:00' and '2023-12-31 00:00:00'
 					group by
 					t7.id
  )t8 on t8.id=t1.id
 left join (
 				select
 				 t9.id
-				,count(distinct t5.id) as 工作簿访问用户数
+				,count(distinct t3.system_user_id) as 工作簿访问用户数
 				from public.historical_events t1
 				left join public.historical_event_types t2 on t2.type_id=t1.historical_event_type_id
 				left join public.hist_users t3 on t3.id=t1.hist_actor_user_id
-				left join public.users t4 on t4.id=t3.user_id
-				left join public.system_users t5 on t5.id =t4.system_user_id
 				left join public.hist_workbooks t8 on t8.id=t1.hist_workbook_id
 				left join public.workbooks t9 on t9.id=t8.workbook_id
 				where t2.name ='Access View'
-				and t1.created_at::timestamp + '8 hour' between '2023-03-01 00:00:00' and '2023-04-09 00:00:00'
+				and t1.created_at::timestamp + '8 hour' between '2000-01-01 00:00:00' and '2023-12-31 00:00:00'
 				group by
 				t9.id
 )t9 on t9.id=t2.id
