@@ -1,4 +1,3 @@
---数据源表
 with temp_view_count as(
 select
  datasource_id
@@ -26,7 +25,7 @@ select
 ,case when t1.refreshable_extracts='t' then '数据提取'
 			else '实时连接' end as 连接类型
 ,t7.数据源最后一次访问时间
-,(select sum(a.view_count) from temp_view_count a where a.datasource_id=t1.id) as 视图访问数
+,(select sum(a.view_count) from temp_view_count a where a.datasource_id=t1.id and count_date between '2000-01-01' and '2023-12-31') as 视图访问数
 ,数据源访问数
 ,链接工作簿数
 from public.datasources t1
