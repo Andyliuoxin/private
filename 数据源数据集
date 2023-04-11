@@ -1,3 +1,4 @@
+--数据源表
 with temp_view_count as(
 select
  datasource_id
@@ -19,9 +20,8 @@ select
 ,t4.friendly_name as 显示名称
 ,t5.id as 站点ID
 ,t5.name as 站点
-,case when t6.server='' then t6.dbname 
-			else t6.server end as 连接到
-,t6.dbclass as 源数据类型
+,t6.连接到
+,t6.源数据个数
 ,t1.extracts_refreshed_at::timestamp + '8 hour' as 最后一次数据刷新时间
 ,case when t1.refreshable_extracts='t' then '数据提取'
 			else '实时连接' end as 连接类型
@@ -34,7 +34,15 @@ left join public.projects t2 on t2.id=t1.project_id
 left join public.users t3 on t3.id=t1.owner_id
 left join public.system_users t4 on t4.id=t3.system_user_id
 left join public.sites t5 on t5.id=t1.site_id
-left join public.data_connections t6 on t6.datasource_id=t1.id
+left join (
+					select
+					 datasource_id
+					,string_agg(case when server='' then dbname else server end,';') as 连接到
+					,count(1) as 源数据个数
+					from public.data_connections
+					group by
+					datasource_id
+)t6	on t6.datasource_id=t1.id
 left join (
 					select
 					t15.id
@@ -49,22 +57,15 @@ left join (
 					t15.id
  )t7 on t7.id=t1.id
  left join (
-					select id,count(hidden_name) as 链接工作簿数 from(
-						 select
-						 t1.id
-						,t1.name as 数据源
-						,t2.hidden_name
-						,t2.parent_workbook_id
-						from (
+						select id,count(distinct parent_workbook_id) as 链接工作簿数 from(
 								select
-								 id
-								,site_id
-								,project_id
-								,name
-								from datasources
-								where parent_type is null
-						)t1
-						left join datasources t2 on t2.site_id=t1.site_id and t2.project_id=t1.project_id and t2.name=t1.name and t2.parent_type='Workbook'
-					)t group by id
+								 t1.id
+								,t1.repository_url
+								,t1.name as 数据源
+								,t3.parent_workbook_id
+								from (select * from datasources where parent_type is null)t1
+								left join data_connections t2 on t2.site_id=t1.site_id and t2.dbname=t1.repository_url
+								left join (select * from datasources where parent_type='Workbook')t3 on t3.id=t2.datasource_id
+						)t group by id
  )t8 on t8.id=t1.id
 where t1.parent_type is null
