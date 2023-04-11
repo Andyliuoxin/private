@@ -2,8 +2,8 @@ select
  t1.id as 操作ID
 ,t2.name as 操作类型
 ,t1.created_at::timestamp + '8 hour' as 操作时间
-,t4.id as 用户ID
-,t5.name as 用户
+,t3.user_id as 用户ID
+,t3.name as 用户
 ,t13.id as 站点ID
 ,t13.name as 站点
 ,t11.id as 项目ID
@@ -17,8 +17,8 @@ select
 from public.historical_events t1
 left join public.historical_event_types t2 on t2.type_id=t1.historical_event_type_id
 left join public.hist_users t3 on t3.id=t1.hist_actor_user_id
-left join public.users t4 on t4.id=t3.user_id
-left join public.system_users t5 on t5.id =t4.system_user_id
+--left join public.users t4 on t4.id=t3.user_id
+--left join public.system_users t5 on t5.id =t4.system_user_id
 left join public.hist_views t6 on t6.id=t1.hist_view_id
 left join public.views t7 on t7.id=t6.view_id
 left join public.hist_workbooks t8 on t8.id=t1.hist_workbook_id
@@ -29,4 +29,4 @@ left join public.hist_sites t12 on t12.id=t1.hist_actor_site_id
 left join public.sites t13 on t13.id=t12.site_id
 left join public.hist_datasources t14 on t14.id=t1.hist_datasource_id
 left join public.datasources t15 on t15.id=t14.datasource_id
-where t1.hist_actor_user_id is not null and t2.name in ('Login','Publish Workbook','Publish Data Source','Access View','Access Data Source','Download Workbook','Download Data Source')
+where t2.name in ('Login','Publish Workbook','Publish Data Source','Access View','Access Data Source','Download Workbook','Download Data Source')
