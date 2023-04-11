@@ -2,7 +2,7 @@ select
  t1.id as 操作ID
 ,t2.name as 操作类型
 ,t1.created_at::timestamp + '8 hour' as 操作时间
-,t3.user_id as 用户ID
+,t3.system_user_id as 用户ID
 ,t3.name as 用户
 ,t13.id as 站点ID
 ,t13.name as 站点
