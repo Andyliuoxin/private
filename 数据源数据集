@@ -24,10 +24,14 @@ select
 ,t1.extracts_refreshed_at::timestamp + '8 hour' as 最后一次数据刷新时间
 ,case when t1.refreshable_extracts='t' then '数据提取'
 			else '实时连接' end as 连接类型
-,t7.数据源最后一次访问时间
+,case when t1.refreshable_extracts='t' and t9.执行用户id is not null then '用户'
+			when t1.refreshable_extracts='t' and t9.datasource_id is not null and t9.执行用户id is null then '系统'
+			when t1.refreshable_extracts='t' and t9.datasource_id is null then '未知'
+			else null end as 数据提取执行者
 ,(select sum(a.view_count) from temp_view_count a where a.datasource_id=t1.id and count_date between '2000-01-01' and '2023-12-31') as 视图访问数
-,数据源访问数
-,链接工作簿数
+,t7.数据源最后一次访问时间
+,t7.数据源访问数
+,t8.链接工作簿数
 from public.datasources t1
 left join public.projects t2 on t2.id=t1.project_id
 left join public.users t3 on t3.id=t1.owner_id
@@ -44,17 +48,16 @@ left join (
 )t6	on t6.datasource_id=t1.id
 left join (
 					select
-					t15.id
+					t14.datasource_id
 					,max(t1.created_at)::timestamp + '8 hour' as 数据源最后一次访问时间
 					,count(1) as 数据源访问数
 					from public.historical_events t1
 					left join public.historical_event_types t2 on t2.type_id=t1.historical_event_type_id
 					left join public.hist_datasources t14 on t14.id=t1.hist_datasource_id
-					left join public.datasources t15 on t15.id=t14.datasource_id
 					where t2.name ='Access Data Source'
 					group by
-					t15.id
- )t7 on t7.id=t1.id
+					t14.datasource_id
+ )t7 on t7.datasource_id=t1.id
  left join (
 						select id,count(distinct parent_workbook_id) as 链接工作簿数 from(
 								select
@@ -67,4 +70,15 @@ left join (
 								left join (select * from datasources where parent_type='Workbook')t3 on t3.id=t2.datasource_id
 						)t group by id
  )t8 on t8.id=t1.id
+ left join (
+					 select distinct
+					 t14.datasource_id
+					,t14.name as 数据源
+					,first_value(t1.hist_actor_user_id) over(partition by t14.datasource_id order by created_at desc) as 执行用户id
+					from public.historical_events t1
+					left join public.historical_event_types t2 on t2.type_id=t1.historical_event_type_id
+					left join public.hist_users t3 on t3.id=t1.hist_actor_user_id
+					left join public.hist_datasources t14 on t14.id=t1.hist_datasource_id
+					where t2.name in ('Refresh Data Source Extract')
+ )t9 on t9.datasource_id=t1.id
 where t1.parent_type is null
