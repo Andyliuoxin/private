@@ -1,4 +1,3 @@
---用户表
 select
  t1.id as 用户ID
 ,t1.name as 用户名
