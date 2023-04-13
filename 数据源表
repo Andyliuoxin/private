@@ -1,3 +1,4 @@
+--数据源表
 with temp_view_count as(
 select
  datasource_id
@@ -30,7 +31,7 @@ select
 			else null end as 数据提取执行者
 ,(select sum(a.view_count) from temp_view_count a where a.datasource_id=t1.id and count_date between '2000-01-01 00:00:00' and '2023-12-31 00:00:00') as 视图访问数
 ,t7.数据源最后一次访问时间
-,t7.数据源访问数
+,t10.数据源访问数
 ,t8.链接工作簿数
 from public.datasources t1
 left join public.projects t2 on t2.id=t1.project_id
@@ -50,7 +51,6 @@ left join (
 					select
 					t14.datasource_id
 					,max(t1.created_at)::timestamp + '8 hour' as 数据源最后一次访问时间
-					,count(1) as 数据源访问数
 					from public.historical_events t1
 					left join public.historical_event_types t2 on t2.type_id=t1.historical_event_type_id
 					left join public.hist_datasources t14 on t14.id=t1.hist_datasource_id
@@ -84,7 +84,7 @@ left join (
 left join (
 					select
 					t14.datasource_id
-					,count(1) as 数据源访问数
+					,count(t1.hist_actor_user_id) as 数据源访问数
 					from public.historical_events t1
 					left join public.historical_event_types t2 on t2.type_id=t1.historical_event_type_id
 					left join public.hist_datasources t14 on t14.id=t1.hist_datasource_id
